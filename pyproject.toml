@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gitbook-scraper"
+version = "0.1.0"
+authors = [
+  { name="Async", email="cigarette@keemail.com" },
+]
+description = "A CLI tool to scrape and structure GitBook documentation"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests>=2.25.0",
+    "beautifulsoup4>=4.9.0",
+    "click>=8.0.0",
+    "rich>=10.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "requests-mock>=1.11.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+gitbook-scraper = "gitbook_scraper.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gitbook_scraper"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=gitbook_scraper --cov-report=term-missing"
+
+[tool.ruff]
+select = ["E", "F", "I"]
+fixable = ["A", "B", "C", "D", "E", "F", "I"]
+exclude = [".git", ".venv", "venv", "build", "dist"]
+
+[tool.black]
+line-length = 88
+target-version = ["py37"]
+include = '\.pyi?$'
