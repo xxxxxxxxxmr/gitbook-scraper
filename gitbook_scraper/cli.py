@@ -26,8 +26,10 @@ console = Console()
               help='Enable debug logging [default: False]')
 @click.option('--selector-file', type=click.Path(exists=True, dir_okay=False),
               help='Path to JSON file with custom CSS selectors')
+@click.option('--toc-items', '-t', multiple=True,
+              help='Specific TOC items to extract (can be specified multiple times)')
 def main(url: str, output: str, toc: bool, delay: float, retries: int,
-         timeout: int, debug: bool, selector_file: Optional[str]) -> int:
+         timeout: int, debug: bool, selector_file: Optional[str], toc_items: tuple) -> int:
     """Scrape and structure GitBook documentation into a single markdown file."""
     try:
         # Validate URL
@@ -43,7 +45,8 @@ def main(url: str, output: str, toc: bool, delay: float, retries: int,
             retries=retries,
             timeout=timeout,
             debug=debug,
-            selector_file=selector_file
+            selector_file=selector_file,
+            toc_items=list(toc_items) if toc_items else None
         )
         
         with console.status("[bold green]Scraping documentation..."):

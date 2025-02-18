@@ -11,6 +11,7 @@ A command-line tool to scrape and structure GitBook documentation into a single,
 - 🛠️ Configurable output format and structure
 - 🔄 Automatic retry on failed requests
 - 📋 Table of contents generation
+- 🎯 Selective TOC item extraction
 
 ## Installation
 
@@ -32,6 +33,9 @@ gitbook-scraper https://your-gitbook-url.io --toc
 
 # Custom rate limiting
 gitbook-scraper https://your-gitbook-url.io --delay 1.0
+
+# Extract specific TOC items
+gitbook-scraper https://your-gitbook-url.io -t "Getting Started" -t "Advanced Topics"
 ```
 
 ## Advanced Usage
@@ -47,6 +51,7 @@ Options:
   --timeout INTEGER    Request timeout in seconds [default: 10]
   --debug             Enable debug logging [default: False]
   --no-cleanup        Keep intermediate files [default: False]
+  -t, --toc-items TEXT  Specific TOC items to extract (can be specified multiple times)
   --help             Show this message and exit
 ```
 
@@ -55,11 +60,20 @@ Options:
 ```python
 from gitbook_scraper import GitbookScraper
 
+# Basic usage
 scraper = GitbookScraper(
     base_url="https://your-gitbook-url.io",
     output_file="documentation.md",
     generate_toc=True,
     delay=0.5
+)
+
+# Extract specific TOC items
+scraper = GitbookScraper(
+    base_url="https://your-gitbook-url.io",
+    output_file="documentation.md",
+    generate_toc=True,
+    toc_items=["Getting Started", "Advanced Topics"]
 )
 
 scraper.scrape()

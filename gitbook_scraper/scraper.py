@@ -22,7 +22,8 @@ class GitbookScraper:
         retries: int = 3,
         timeout: int = 10,
         debug: bool = False,
-        selector_file: Optional[str] = None
+        selector_file: Optional[str] = None,
+        toc_items: Optional[List[str]] = None
     ):
         """
         Initialize the GitBook scraper.
@@ -36,6 +37,7 @@ class GitbookScraper:
             timeout: Request timeout in seconds
             debug: Enable debug logging
             selector_file: Optional JSON file with custom CSS selectors
+            toc_items: Optional list of TOC item titles to extract. If None, extracts all items.
         """
         self.base_url = self.normalize_url(base_url)
         self.domain = urlparse(self.base_url).netloc
@@ -44,6 +46,7 @@ class GitbookScraper:
         self.delay = delay
         self.retries = retries
         self.timeout = timeout
+        self.toc_items = set(toc_items) if toc_items else None
         
         # Setup logging
         log_level = logging.DEBUG if debug else logging.INFO
@@ -369,6 +372,23 @@ class GitbookScraper:
         
         return "\n".join(content)
 
+    def filter_nav_structure(self, structure: List[Dict]) -> List[Dict]:
+        """Filter navigation structure to only include specified TOC items and their children."""
+        if not self.toc_items:
+            return structure
+
+        filtered = []
+        for item in structure:
+            if item['title'] in self.toc_items:
+                filtered.append(item)
+            elif item['children']:
+                filtered_children = self.filter_nav_structure(item['children'])
+                if filtered_children:
+                    item_copy = item.copy()
+                    item_copy['children'] = filtered_children
+                    filtered.append(item_copy)
+        return filtered
+
     def scrape(self):
         """Main scraping method."""
         with Progress(
@@ -381,6 +401,12 @@ class GitbookScraper:
                 
                 if not self.nav_structure:
                     raise NavigationExtractionError("Empty navigation structure")
+
+                # Filter navigation structure if specific TOC items are requested
+                if self.toc_items:
+                    self.nav_structure = self.filter_nav_structure(self.nav_structure)
+                    if not self.nav_structure:
+                        raise NavigationExtractionError("No matching TOC items found")
                 
                 progress.add_task("Generating documentation...", total=None)
                 content = self.generate_markdown(self.nav_structure)
